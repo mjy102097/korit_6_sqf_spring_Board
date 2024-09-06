@@ -1,6 +1,7 @@
 package com.study.SpringSecurityMybatis.controller;
 
 import com.study.SpringSecurityMybatis.exception.AccessTokenValidException;
+import com.study.SpringSecurityMybatis.exception.NotFoundBoardException;
 import com.study.SpringSecurityMybatis.exception.SignupException;
 import com.study.SpringSecurityMybatis.exception.ValidException;
 import org.springframework.http.ResponseEntity;
@@ -35,5 +36,10 @@ public class ExceptionController {
     @ExceptionHandler(AccessTokenValidException.class)
     public ResponseEntity<?> accessTokenException(AccessTokenValidException e) {
         return ResponseEntity.status(403).body(false);
+    }
+
+    @ExceptionHandler(NotFoundBoardException.class)
+    public ResponseEntity<?> NotFoundBoardException(NotFoundBoardException e) {
+        return ResponseEntity.status(404).body(e.getMessage());
     }
 }

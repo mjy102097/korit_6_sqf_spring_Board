@@ -9,21 +9,25 @@ import { storage } from "../../../firebase/firebase";
 import { v4 as uuid } from "uuid";
 import { CircleLoader } from "react-spinners";
 import { boardApi } from "../../../apis/boardApi";
+import { useNavigate } from "react-router-dom";
+import { instance } from "../../../apis/util/instance";
 Quill.register("modules/ImageResize", ImageResize);
 
 function WritePage(props) {
-    const [ board, setBoard ] = useState({
+    const navigator = useNavigate();
+    const [board, setBoard] = useState({
         title: "",
         content: ""
     });
 
     const quillRef = useRef(null);
-    const [ isUploading, setUploading ] = useState(false);
+    const [isUploading, setUploading] = useState(false);
 
     const handleWriteSubmitOnClick = async () => {
-        await boardApi(board)
+        boardApi(board)
             .then((response) => {
-                console.log(response)
+                alert("작성이 완료 되었습니다.");
+                navigator(`/board/detail/${response.boardId}`);
             })
             .catch((error) => {
                 console.log(error);
@@ -42,12 +46,34 @@ function WritePage(props) {
                     }
                 }
             });
-        
+
+        //  비동기 처리
+        // try {
+        //     const response = await instance.post("/board", board);
+        //     alert("작성완료 A A await!");
+        //     navigator(`/board/detail/${response.data.boardId}`);
+        // } catch (error) {
+        //     const fieldErrors = error.response.data;
+
+        //     for (let fieldError of fieldErrors) {
+        //         if (fieldError.field === "title") {
+        //             alert(fieldError.message);
+        //             return;
+        //         }
+        //     }
+        //     for (let fieldError of fieldErrors) {
+        //         if (fieldError.field === "content") {
+        //             alert(fieldError.message);
+        //             return;
+        //         }
+        //     }
+        // }
+
         setBoard({
-            title:"",
-            content:""
+            title: "",
+            content: ""
         })
-        
+
     }
 
     const handleTitleInputOnChange = (e) => {
@@ -80,8 +106,8 @@ function WritePage(props) {
             const task = uploadBytesResumable(storageRef, imgFile);
             task.on(
                 "state_changed",
-                () => {},
-                () => {},
+                () => { },
+                () => { },
                 async () => {
                     const url = await getDownloadURL(storageRef);
                     editor.insertEmbed(editPoint.index, "image", url);
@@ -90,7 +116,7 @@ function WritePage(props) {
                     setUploading(false);
                 },
             )
-            
+
         }
     }, []);
 
@@ -98,9 +124,9 @@ function WritePage(props) {
         [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
         [{ 'font': [] }],
         ['bold', 'italic', 'underline', 'strike'],
-        [{ 'color': [] }, { 'background': [] }],[{ 'align': [] }],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        [{ 'color': [] }, { 'background': [] }], [{ 'align': [] }],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
         ['link', 'image', 'video', 'formula'],
         ['blockquote', 'code-block'],
     ];
@@ -111,17 +137,15 @@ function WritePage(props) {
                 <h1>Quill Edit</h1>
                 <button onClick={handleWriteSubmitOnClick}>작성하기</button>
             </header>
-            <input type="text" name="title" css={s.titleInput} onChange={handleTitleInputOnChange} value={board.title} placeholder="게시글의 제목을 입력하세요."/>
+            <input type="text" name="title" css={s.titleInput} onChange={handleTitleInputOnChange} value={board.title} placeholder="게시글의 제목을 입력하세요." />
             <div css={s.editorLayout}>
                 {
-                   isUploading &&
+                    isUploading &&
                     <div css={s.loadingLayout}>
-                        <CircleLoader>
-                            <img src="" css={s.img2}/>
-                        </CircleLoader>
+                        <CircleLoader />
                     </div>
                 }
-                <ReactQuill 
+                <ReactQuill
                     ref={quillRef}
                     style={{
                         boxSizing: "border-box",

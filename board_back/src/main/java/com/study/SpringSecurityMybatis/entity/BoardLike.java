@@ -9,12 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class Board {
+public class BoardLike {
     private Long id;
-    private String title;
-    private String content;
+    private Long boardId;
     private Long userId;
-    private int viewCount;
-
-    private User user;
 }

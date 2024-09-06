@@ -66,10 +66,3 @@ export const loadingLayout = css`
     height: 100%;
     background-color: #00000066;
 `;
-
-export const img2 = css`
-    display: flex;
-    background-image: url('https://i1.ruliweb.com/ori/17/04/23/15b9a751497159acd.gif');
-    width: 100%;
-    height: 100%;
-`

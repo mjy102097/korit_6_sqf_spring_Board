@@ -8,7 +8,7 @@ export const boardApi = async(data) => {
     try {
         const response = await instance.post("/board", data)
         boardData = {
-            boardId: response.data
+            boardId: response.data.boardId
         }
     } catch(e) {
         const response = e.response;
