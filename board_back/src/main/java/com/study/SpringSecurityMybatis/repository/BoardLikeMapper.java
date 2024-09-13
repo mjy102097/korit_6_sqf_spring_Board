@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.Param;
 public interface BoardLikeMapper {
     int save(BoardLike boardLike);
     int deleteById(Long id);
-    BoardLike findByBoardIdAndUserID(@Param("boardId") Long boardId, @Param("userId") Long userId);
+    BoardLike findByBoardIdAndUserId(
+            @Param("boardId") Long boardId,
+            @Param("userId") Long UserId);
     int getLikeCountByBoardId(Long boardId);
 }

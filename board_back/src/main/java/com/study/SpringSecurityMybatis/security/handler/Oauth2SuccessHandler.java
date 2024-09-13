@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @Component
-public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     @Autowired
     private UserMapper userMapper;
@@ -35,7 +36,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             response.sendRedirect("http://localhost:3000/user/join/oauth2?oAuth2Name=" + oAuth2Name + "&provider=" + provider);
             return;
         }
-        String accessToken = jwtProvider.generatedAccessToken(user);
+        String accessToken = jwtProvider.generateAccessToken(user);
         response.sendRedirect("http://localhost:3000/user/login/oauth2?accessToken=" + accessToken);
     }
 }

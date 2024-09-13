@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,12 +19,13 @@ public class PrincipalUser implements UserDetails {
     private Long id;
     private String username;
     private String password;
-    private String name;
     private Set<UserRoles> roles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream().map(ur -> new SimpleGrantedAuthority(ur.getRole().getName())).collect(Collectors.toSet());
+        return roles.stream().map(
+                ur -> new SimpleGrantedAuthority(ur.getRole().getName())
+        ).collect(Collectors.toSet());
     }
 
     @Override

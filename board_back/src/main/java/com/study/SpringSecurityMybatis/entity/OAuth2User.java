@@ -15,3 +15,12 @@ public class OAuth2User {
     private String oAuth2Name;
     private String provider;
 }
+
+
+
+
+
+
+
+
+

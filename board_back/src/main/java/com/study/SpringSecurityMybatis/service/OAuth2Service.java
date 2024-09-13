@@ -1,8 +1,7 @@
 package com.study.SpringSecurityMybatis.service;
 
 import com.study.SpringSecurityMybatis.dto.request.ReqOAuth2MergeDto;
-import com.study.SpringSecurityMybatis.dto.request.ReqOAuth2signupDto;
-import com.study.SpringSecurityMybatis.dto.request.ReqSignupDto;
+import com.study.SpringSecurityMybatis.dto.request.ReqOAuth2SignupDto;
 import com.study.SpringSecurityMybatis.entity.Role;
 import com.study.SpringSecurityMybatis.entity.User;
 import com.study.SpringSecurityMybatis.entity.UserRoles;
@@ -11,6 +10,7 @@ import com.study.SpringSecurityMybatis.repository.RoleMapper;
 import com.study.SpringSecurityMybatis.repository.UserMapper;
 import com.study.SpringSecurityMybatis.repository.UserRolesMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class OAuth2Service implements OAuth2UserService {
@@ -36,9 +36,9 @@ public class OAuth2Service implements OAuth2UserService {
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private UserRolesMapper userRolesMapper;
-    @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private UserRolesMapper userRolesMapper;
     @Autowired
     private OAuth2UserMapper oAuth2UserMapper;
 
@@ -71,14 +71,12 @@ public class OAuth2Service implements OAuth2UserService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void signup(ReqOAuth2signupDto dto) {
+    public void signup(ReqOAuth2SignupDto dto) {
         User user = dto.toEntity(passwordEncoder);
         userMapper.save(user);
         Role role = roleMapper.findByName("ROLE_USER");
         if(role == null) {
-            role = Role.builder()
-                    .name("ROLE_USER")
-                    .build();
+            role = Role.builder().name("ROLE_USER").build();
             roleMapper.save(role);
         }
         userRolesMapper.save(UserRoles.builder()
@@ -91,4 +89,5 @@ public class OAuth2Service implements OAuth2UserService {
                 .provider(dto.getProvider())
                 .build());
     }
+
 }

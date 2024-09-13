@@ -1,8 +1,111 @@
 /** @jsxImportSource @emotion/react */
+import { css } from "@emotion/react";
 import { useState } from "react";
-import * as s from "./style";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { oauth2JoinApi, oauth2MergeApi } from "../../apis/oauth2Api";
+import { oAuth2SignupApi, oauth2MergeApi } from "../../apis/oauth2Api";
+
+const layout = css`
+    display: flex;
+    flex-direction: column;
+    margin: 0px auto;
+    width: 460px;
+`;
+
+const logo = css`
+    font-size: 24px;
+    margin-bottom: 40px;
+`;
+
+const selectMenuBox = css`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+
+    & > input {
+        display: none;
+    }
+
+    & > label {
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+        border: 1px solid #dbdbdb;
+        height: 40px;
+        cursor: pointer;
+    }
+
+    & > label:nth-of-type(1) {
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    & > label:nth-last-of-type(1) {
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    & > input:checked + label {
+        background-color: #fafafa;
+        box-shadow: 0px 0px 5px #00000033 inset;
+    }
+`;
+
+const joinInfoBox = css`
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    width: 100%;
+
+    & input {
+        box-sizing: border-box;
+        border: none;
+        outline: none;
+        width: 100%;
+        height: 50px;
+        font-size: 16px;
+    }
+
+    & p {
+        margin: 0px 0px 10px 10px;
+        color: #ff2f2f;
+        font-size: 12px;
+    }
+
+    & div {
+        box-sizing: border-box;
+        width: 100%;
+        border: 1px solid #dbdbdb;
+        border-bottom: none;
+        padding: 0px 20px;
+    }
+
+    & div:nth-of-type(1) {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    & div:nth-last-of-type(1) {
+        border-bottom: 1px solid #dbdbdb;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+`;
+
+const joinButton = css`
+    border: none;
+    border-radius: 10px;
+    width: 100%;
+    height: 50px;
+    background-color: #999999;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+`;
 
 function OAuth2JoinPage(props) {
     const navigate = useNavigate();
@@ -23,34 +126,34 @@ function OAuth2JoinPage(props) {
         password: <></>,
         checkPassword: <></>,
         name: <></>,
-        email: <></>
+        email: <></>,
     });
 
-    const handleSelectMenuOnChange = (e) => {
+    const handleSeletMenuOnChange = (e) => {
         setInputUser({
             username: "",
             password: "",
             checkPassword: "",
             name: "",
             email: ""
-        })
+        });
         setFieldErrorMessages({
             username: <></>,
             password: <></>,
             checkPassword: <></>,
             name: <></>,
-            email: <></>
+            email: <></>,
         })
         setSelectMenu(e.target.value);
     }
 
     const handleInputUserOnChange = (e) => {
-        setInputUser(user => ({
-            ...user,
+        setInputUser(inputUser => ({
+            ...inputUser,
             [e.target.name]: e.target.value
-        }))
+        }));
     }
-    
+
     const handleMergeSubmitOnClick = async () => {
         const mergeUser = {
             username: inputUser.username,
@@ -59,12 +162,13 @@ function OAuth2JoinPage(props) {
             provider: searchParams.get("provider"),
         }
         const mergeData = await oauth2MergeApi(mergeUser);
-        if(!mergeData.isSuccess) {
-            if(mergeData.fieldErrors === "loginError") {
+
+        if (!mergeData.isSuceess) {
+            if (mergeData.errorStatus === "loginError") {
                 alert(mergeData.error);
                 return;
             }
-            if(mergeData.errorStatus === "fieldError") {
+            if (mergeData.errorStatus === "fieldError") {
                 showFieldErrorMessage(mergeData.error);
                 return;
             }
@@ -72,51 +176,53 @@ function OAuth2JoinPage(props) {
         alert("계정 통합이 완료되었습니다.");
         navigate("/user/login");
     }
-    
+
     const handleJoinSubmitOnClick = async () => {
         const joinUser = {
             ...inputUser,
             oauth2Name: searchParams.get("oAuth2Name"),
-            provider: searchParams.get("provider")
+            provider: searchParams.get("provider"),
         }
-        const joinData = await oauth2JoinApi(joinUser);
-        if(!joinData.isSuccess) {
+
+        const joinData = await oAuth2SignupApi(joinUser);
+        if (!joinData.isSuceess) {
             showFieldErrorMessage(joinData.fieldErrors);
             return;
         }
-        alert("회원가입이 완료 AA await!!");
-        navigate("/");
+        alert("회원가입이 완료되었습니다.");
+        navigate("/user/login");
     }
 
     const showFieldErrorMessage = (fieldErrors) => {
-        let EmptyFieldErros = {
+        let EmptyFieldErrors = {
             username: <></>,
             password: <></>,
             checkPassword: <></>,
             name: <></>,
-            email: <></>
+            email: <></>,
         };
 
         for (let fieldError of fieldErrors) {
-            EmptyFieldErros = {
-                ...EmptyFieldErros,
-                [fieldError.field]: <p>{fieldError.defaultMessage}</p>
+            EmptyFieldErrors = {
+                ...EmptyFieldErrors,
+                [fieldError.field]: <p>{fieldError.defaultMessage}</p>,
             }
         }
 
-        setFieldErrorMessages(EmptyFieldErros);
+        setFieldErrorMessages(EmptyFieldErrors);
     }
 
     return (
-        <div css={s.layout}>
-            <Link to={"/"}><h1 css={s.logo}>사이트 로고</h1></Link>
-            <div css={s.selectMenuBox}>
+        <div css={layout}>
+            <Link to={"/"}><h1 css={logo}>사이트 로고</h1></Link>
+            <div css={selectMenuBox}>
                 <input type="radio" id="merge" name="selectMenu"
-                    onChange={handleSelectMenuOnChange}
+                    onChange={handleSeletMenuOnChange}
                     checked={selectMenu === "merge"} value="merge" />
                 <label htmlFor="merge">계정통합</label>
+
                 <input type="radio" id="join" name="selectMenu"
-                    onChange={handleSelectMenuOnChange}
+                    onChange={handleSeletMenuOnChange}
                     checked={selectMenu === "join"} value="join" />
                 <label htmlFor="join">회원가입</label>
             </div>
@@ -124,7 +230,7 @@ function OAuth2JoinPage(props) {
                 selectMenu === "merge"
                     ?
                     <>
-                        <div css={s.joinInfoBox}>
+                        <div css={joinInfoBox}>
                             <div>
                                 <input type="text" name='username' onChange={handleInputUserOnChange} value={inputUser.username} placeholder='아이디' />
                                 {fieldErrorMessages.username}
@@ -134,43 +240,33 @@ function OAuth2JoinPage(props) {
                                 {fieldErrorMessages.password}
                             </div>
                         </div>
-                        <button css={s.joinButton} onClick={handleMergeSubmitOnClick}>통합하기</button>
+                        <button css={joinButton} onClick={handleMergeSubmitOnClick}>통합하기</button>
                     </>
                     :
                     <>
-                        <div css={s.joinInfoBox}>
+                        <div css={joinInfoBox}>
                             <div>
                                 <input type="text" name='username' onChange={handleInputUserOnChange} value={inputUser.username} placeholder='아이디' />
-                                {
-                                    fieldErrorMessages.username
-                                }
+                                {fieldErrorMessages.username}
                             </div>
                             <div>
                                 <input type="password" name='password' onChange={handleInputUserOnChange} value={inputUser.password} placeholder='비밀번호' />
-                                {
-                                    fieldErrorMessages.password
-                                }
+                                {fieldErrorMessages.password}
                             </div>
                             <div>
                                 <input type="password" name='checkPassword' onChange={handleInputUserOnChange} value={inputUser.checkPassword} placeholder='비밀번호 확인' />
-                                {
-                                    fieldErrorMessages.checkPassword
-                                }
+                                {fieldErrorMessages.checkPassword}
                             </div>
                             <div>
                                 <input type="text" name='name' onChange={handleInputUserOnChange} value={inputUser.name} placeholder='성명' />
-                                {
-                                    fieldErrorMessages.name
-                                }
+                                {fieldErrorMessages.name}
                             </div>
                             <div>
-                                <input type="email" name='email' onChange={handleInputUserOnChange} value={inputUser.email} placeholder='이메일' />
-                                {
-                                    fieldErrorMessages.email
-                                }
+                                <input type="email" name='email' onChange={handleInputUserOnChange} value={inputUser.email} placeholder='이메일주소' />
+                                {fieldErrorMessages.email}
                             </div>
                         </div>
-                        <button css={s.joinButton} onClick={handleJoinSubmitOnClick}>가입하기</button>
+                        <button css={joinButton} onClick={handleJoinSubmitOnClick}>가입하기</button>
                     </>
             }
         </div>

@@ -23,10 +23,10 @@ public class JwtProvider {
     }
 
     public Date getExpireDate() {
-        return new Date(new Date().getTime() + (1000L * 60 * 60 * 24 * 30));
+        return new Date(new Date().getTime() + (1000l * 60 * 60 * 24 * 30));
     }
 
-    public String generatedAccessToken(User user) {
+    public String generateAccessToken(User user) {
         return Jwts.builder()
                 .claim("userId", user.getId())
                 .expiration(getExpireDate())
@@ -34,7 +34,7 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String removeBearer(String bearerToken) throws RuntimeException{
+    public String removeBearer(String bearerToken) throws RuntimeException {
         if(bearerToken == null) {
             throw new RuntimeException();
         }
@@ -42,11 +42,10 @@ public class JwtProvider {
         return bearerToken.substring(bearerLength);
     }
 
-    public Claims getClaims(String accessToken) {
+    public Claims getClaims(String token) {
         JwtParser jwtParser = Jwts.parser()
                 .setSigningKey(key)
                 .build();
-
-        return jwtParser.parseClaimsJws(accessToken).getPayload();
+        return  jwtParser.parseClaimsJws(token).getPayload();
     }
 }

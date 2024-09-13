@@ -1,7 +1,7 @@
 package com.study.SpringSecurityMybatis.service;
 
 import com.study.SpringSecurityMybatis.dto.request.ReqOAuth2MergeDto;
-import com.study.SpringSecurityMybatis.dto.request.ReqProfileDto;
+import com.study.SpringSecurityMybatis.dto.request.ReqProfileImgDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqSigninDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqSignupDto;
 import com.study.SpringSecurityMybatis.dto.response.RespDeleteUserDto;
@@ -12,6 +12,7 @@ import com.study.SpringSecurityMybatis.entity.OAuth2User;
 import com.study.SpringSecurityMybatis.entity.Role;
 import com.study.SpringSecurityMybatis.entity.User;
 import com.study.SpringSecurityMybatis.entity.UserRoles;
+import com.study.SpringSecurityMybatis.exception.DeleteUserException;
 import com.study.SpringSecurityMybatis.exception.SignupException;
 import com.study.SpringSecurityMybatis.repository.RoleMapper;
 import com.study.SpringSecurityMybatis.repository.UserMapper;
@@ -23,12 +24,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Set;
@@ -41,40 +44,43 @@ public class UserService {
     private String defaultProfileImg;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-    @Autowired
     private UserMapper userMapper;
     @Autowired
     private RoleMapper roleMapper;
     @Autowired
     private UserRolesMapper userRolesMapper;
     @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
     private JwtProvider jwtProvider;
 
-    public boolean isDuplicateUsername(String username) {
+    public Boolean isDuplicateUsername(String username) {
         return Optional.ofNullable(userMapper.findByUsername(username)).isPresent();
     }
 
     @Transactional(rollbackFor = SignupException.class)
-    public RespSignupDto insertUserAndRoles(ReqSignupDto dto) throws SignupException {
+    public RespSignupDto insertUserAndUserRoles(ReqSignupDto dto) {
         User user = null;
         try {
             user = dto.toEntity(passwordEncoder);
             userMapper.save(user);
 
             Role role = roleMapper.findByName("ROLE_USER");
-            if(role == null) {
-                roleMapper.save(Role.builder().name("ROLE_USER").build());
+
+            if (role == null) {
+                role = Role.builder().name("ROLE_USER").build();
+                roleMapper.save(role);
             }
 
             UserRoles userRoles = UserRoles.builder()
                     .userId(user.getId())
                     .roleId(role.getId())
                     .build();
+
             userRolesMapper.save(userRoles);
 
             user.setUserRoles(Set.of(userRoles));
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new SignupException(e.getMessage());
         }
 
@@ -84,24 +90,29 @@ public class UserService {
                 .build();
     }
 
-    public RespSigninDto generatedAccessToken(ReqSigninDto dto) {
+    public RespSigninDto getGeneratedAccessToken(ReqSigninDto dto) {
         User user = checkUsernameAndPassword(dto.getUsername(), dto.getPassword());
+
         return RespSigninDto.builder()
                 .expireDate(jwtProvider.getExpireDate().toLocaleString())
-                .accessToken(jwtProvider.generatedAccessToken(user))
+                .accessToken(jwtProvider.generateAccessToken(user))
                 .build();
     }
 
     private User checkUsernameAndPassword(String username, String password) {
         User user = userMapper.findByUsername(username);
+
         if(user == null) {
-            throw new UsernameNotFoundException("사용자 정보를 확인하세요");
+            throw new UsernameNotFoundException("사용장 정보를 다시 확인하세요.");
         }
+
         if(!passwordEncoder.matches(password, user.getPassword())) {
-            throw new BadCredentialsException("사용자 정보를 확인하세요");
+            throw new BadCredentialsException("사용장 정보를 다시 확인하세요.");
         }
+
         return user;
     }
+
     @Transactional(rollbackFor = SQLException.class)
     public RespDeleteUserDto deleteUser(Long id) {
         User user = null;
@@ -114,13 +125,13 @@ public class UserService {
         if(user == null) {
             throw new AuthenticationServiceException("해당 사용자는 존재하지 않는 사용자입니다.");
         }
-        userMapper.deleteById(id);
         userRolesMapper.deleteByUserId(id);
+        userMapper.deleteById(id);
 
         return RespDeleteUserDto.builder()
-                .isDelete(true)
+                .isDeleting(true)
                 .message("사용자 삭제 완료")
-                .deleteeduser(user)
+                .deletedUser(user)
                 .build();
     }
 
@@ -131,7 +142,7 @@ public class UserService {
         ).collect(Collectors.toSet());
 
         return RespUserInfoDto.builder()
-                .userid(user.getId())
+                .userId(user.getId())
                 .username(user.getUsername())
                 .name(user.getName())
                 .email(user.getEmail())
@@ -140,12 +151,13 @@ public class UserService {
                 .build();
     }
 
-    public Boolean updateProfileImg(ReqProfileDto dto) {
+    public Boolean updateProfileImg(ReqProfileImgDto dto) {
         PrincipalUser principalUser =
                 (PrincipalUser) SecurityContextHolder
                         .getContext()
                         .getAuthentication()
                         .getPrincipal();
+
         if(dto.getImg() == null || dto.getImg().isBlank()) {
             userMapper.modifyImgById(principalUser.getId(), defaultProfileImg);
             return true;
@@ -153,7 +165,6 @@ public class UserService {
 
         userMapper.modifyImgById(principalUser.getId(), dto.getImg());
         return true;
-
     }
 
     public OAuth2User mergeSignin(ReqOAuth2MergeDto dto) {
@@ -165,3 +176,12 @@ public class UserService {
                 .build();
     }
 }
+
+
+
+
+
+
+
+
+

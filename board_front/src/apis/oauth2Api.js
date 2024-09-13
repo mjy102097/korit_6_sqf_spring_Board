@@ -2,61 +2,71 @@ import { instance } from "./util/instance";
 
 export const oauth2MergeApi = async (user) => {
     let mergeData = {
-        isSuccess: false,
+        isSuceess: false,
         fieldErrors: [
-            {   
+            {
                 field: "",
                 defaultMessage: ""
             }
         ]
     }
-
     try {
-        const response = await instance.post("/auth/oauth2/merge", user); 
+        const response = await instance.post("/auth/oauth2/merge", user);
         mergeData = {
-            isSuccess: true
+            isSuceess: true
         }
-    } catch(e) {
-        const response = e.response;
+    } catch (error) {
+        const response = error.response;
+        
         mergeData = {
-            isSuccess: false,
+            isSuceess: false,
         }
+
         if(typeof(response.data) === 'string') {
             mergeData['errorStatus'] = "loginError";
             mergeData['error'] = response.data;
-        } else {
+        }else {
             mergeData['errorStatus'] = "fieldError";
-            mergeData['error'] = response.data.map(fieldError => ({field: fieldError.field, defaultMessage: fieldError.defaultMessage}))
+            mergeData['error'] = response.data.map(fieldError => ({
+                field: fieldError.field, 
+                defaultMessage: fieldError.defaultMessage
+            }));
         }
     }
-    
+
     return mergeData;
 }
 
-export const oauth2JoinApi = async (user) => {
-    let JoinData = {
-        isSuccess: false,
+export const oAuth2SignupApi = async (user) => {
+    let signupData = {
+        isSuceess: false,
+        ok: {
+            message: "",
+            user: null
+        },
         fieldErrors: [
-            {   
+            {
                 field: "",
                 defaultMessage: ""
             }
-        ] 
+        ]
     }
-
     try {
         const response = await instance.post("/auth/oauth2/signup", user);
-        JoinData = {
-            isSuccess: true
+        signupData = {
+            isSuceess: true,
+            ok: response.data,
         }
-    } catch(e) {
-        const response = e.response;
-        JoinData = {
-            isSuccess: false,
-            fieldErrors: response.data.map(fieldError => ({field: fieldError.field, defaultMessage: fieldError.defaultMessage}))
+    } catch (error) {
+        const response = error.response;
+        signupData = {
+            isSuceess: false,
+            fieldErrors: response.data.map(fieldError => ({
+                field: fieldError.field, 
+                defaultMessage: fieldError.defaultMessage
+            })),
         }
     }
-    
-    return JoinData;
 
+    return signupData;
 }

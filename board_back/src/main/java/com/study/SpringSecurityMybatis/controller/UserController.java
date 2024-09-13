@@ -1,6 +1,6 @@
 package com.study.SpringSecurityMybatis.controller;
 
-import com.study.SpringSecurityMybatis.dto.request.ReqProfileDto;
+import com.study.SpringSecurityMybatis.dto.request.ReqProfileImgDto;
 import com.study.SpringSecurityMybatis.security.principal.PrincipalUser;
 import com.study.SpringSecurityMybatis.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +21,21 @@ public class UserController {
 
     @GetMapping("/user/me")
     public ResponseEntity<?> getUserMe() {
-        PrincipalUser principalUser = (PrincipalUser) SecurityContextHolder
+        PrincipalUser principalUser =
+                (PrincipalUser) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
-                 .getPrincipal();
+                .getPrincipal();
         return ResponseEntity.ok().body(userService.getUserInfo(principalUser.getId()));
     }
 
     @DeleteMapping("/user/{id}")
-    public ResponseEntity<?> deleteUSer(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         return ResponseEntity.ok().body(userService.deleteUser(id));
     }
 
     @PatchMapping("/user/img")
-    public ResponseEntity<?> updateProfileImg(@RequestBody ReqProfileDto dto) {
+    public ResponseEntity<?> updateProfileImg(@RequestBody ReqProfileImgDto dto) {
         return ResponseEntity.ok().body(userService.updateProfileImg(dto));
     }
 }

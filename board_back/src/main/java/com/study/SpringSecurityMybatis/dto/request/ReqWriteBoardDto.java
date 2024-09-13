@@ -7,9 +7,9 @@ import javax.validation.constraints.NotBlank;
 
 @Data
 public class ReqWriteBoardDto {
-    @NotBlank(message = "제목을 입력해 주세요.")
+    @NotBlank(message = "제목을 입력하세요.")
     private String title;
-    @NotBlank(message = "내용을 입력해 주세요.")
+    @NotBlank(message = "게시글 내용을 입력하세요.")
     private String content;
 
     public Board toEntity(Long userId) {

@@ -1,36 +1,40 @@
-import { instance } from "./util/instance"
+import { instance } from "./util/instance";
 
-export const signinApi = async (data) => {
+export const signinApi = async (user) => {
     let signinData = {
-        isSuccess: false,
+        isSuceess: false,
         token: null,
         fieldErrors: [
-            {   
+            {
                 field: "",
                 defaultMessage: ""
             }
         ]
     }
-
     try {
-        const response = await instance.post("/auth/signin" ,data);
+        const response = await instance.post("/auth/signin", user);
         signinData = {
-            isSuccess: true,
-            token: response.data
+            isSuceess: true,
+            token: response.data,
         }
-    } catch(e) {
-        const response = e.response;
+    } catch (error) {
+        const response = error.response;
+        
         signinData = {
-            isSuccess: false,
+            isSuceess: false,
         }
+
         if(typeof(response.data) === 'string') {
             signinData['errorStatus'] = "loginError";
             signinData['error'] = response.data;
-        } else {
+        }else {
             signinData['errorStatus'] = "fieldError";
-            signinData['error'] = response.data.map(fieldError => ({field: fieldError.field, defaultMessage: fieldError.defaultMessage}))
+            signinData['error'] = response.data.map(fieldError => ({
+                field: fieldError.field, 
+                defaultMessage: fieldError.defaultMessage
+            }));
         }
     }
-    
+
     return signinData;
 }
